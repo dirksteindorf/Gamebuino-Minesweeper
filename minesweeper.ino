@@ -211,9 +211,17 @@ void process_player_input()
         {
             board[cursor.x+1][cursor.y+1].state = UNCOVERED;
 
+            // game is lost, uncover all fields
             if(board[cursor.x+1][cursor.y+1].is_bomb)
             {
                 game_state = LOST;
+                for(int x=1; x<WIDTH-1; x++)
+                {
+                    for(int y=1; y<HEIGHT-1; y++)
+                    {
+                        board[x][y].state = UNCOVERED;
+                    }
+                }
                 gb.popup(F("You lost. :("), 20);
                 gb.sound.playCancel();
             }
@@ -307,7 +315,6 @@ void loop()
 {
     if(gb.update())
     {
-        gb.display.print(uncovered_fields);
         if(game_state == RUNNING)
         {
             process_player_input();
@@ -318,12 +325,14 @@ void loop()
         if(game_state == WON)
         {
             draw_board();
+            draw_cursor();
             if(gb.buttons.pressed(BTN_C)) setup();
         }
 
         if(game_state == LOST)
         {
             draw_board();
+            draw_cursor();
             if(gb.buttons.pressed(BTN_C)) setup();
         }
     }
