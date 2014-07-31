@@ -20,6 +20,8 @@ const byte offset_y = (LCDHEIGHT - (ROWS) * FIELD_HEIGHT) / 2;
 
 const char text[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
+byte uncovered_fields = 0;
+
 //-------------------------------------
 // board
 enum field_state {COVERED, UNCOVERED, FLAGGED};
@@ -125,7 +127,7 @@ void compute_bomb_hints()
 void draw_board()
 {
     // draw happy/sad smiley depending on the game state
-    if(game_state == RUNNING)
+    if(game_state == WON)
     {
         gb.display.drawChar(FIELD_WIDTH,
                             FIELD_HEIGHT,
@@ -212,11 +214,19 @@ void process_player_input()
             if(board[cursor.x+1][cursor.y+1].is_bomb)
             {
                 game_state = LOST;
+                gb.popup(F("You lost. :("), 20);
                 gb.sound.playCancel();
             }
             else
             {
                 gb.sound.playOK();
+
+                if(++uncovered_fields == COLUMNS * ROWS - BOMB_COUNT)
+                {
+                    game_state = WON;
+                    gb.popup(F("You won! :)"), 20);
+                    gb.sound.playOK();
+                }
             }
         }
     }
@@ -275,6 +285,9 @@ void setup()
 {
     gb.begin();
     gb.titleScreen(F("Minesweeper"));
+
+    gb.pickRandomSeed();
+
     //gb.display.setFont(font3x3);
     gb.display.setFont(font5x7);
 
@@ -286,6 +299,7 @@ void setup()
 
     cursor.x = 0;
     cursor.y = 0;
+    uncovered_fields = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -293,6 +307,7 @@ void loop()
 {
     if(gb.update())
     {
+        gb.display.print(uncovered_fields);
         if(game_state == RUNNING)
         {
             process_player_input();
@@ -303,6 +318,7 @@ void loop()
         if(game_state == WON)
         {
             draw_board();
+            if(gb.buttons.pressed(BTN_C)) setup();
         }
 
         if(game_state == LOST)
