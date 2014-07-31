@@ -22,6 +22,8 @@ const char text[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
 byte uncovered_fields = 0;
 
+byte first_field = true;
+
 //-------------------------------------
 // board
 enum field_state {COVERED, UNCOVERED, FLAGGED};
@@ -78,7 +80,7 @@ void place_bombs()
         x = random(1, WIDTH - 2);
         y = random(1, HEIGHT - 2);
 
-        if(!board[x][y].is_bomb)
+        if(!board[x][y].is_bomb && !(x == cursor.x+1 && y == cursor.y+1))
         {
             board[x][y].is_bomb = true;
             i++;
@@ -201,27 +203,67 @@ void draw_cursor()
 }
 
 //------------------------------------------------------------------------------
+// uncover all fields with no adjacent bombs and their neighbours
+void uncover_harmless_neighbours(byte x, byte y)
+{
+    if(x > 0 && y > 0 && x < WIDTH-1 && y < HEIGHT-1)
+    {
+        if(board[x][y].state == COVERED)
+        {
+            if(!board[x][y].is_bomb)
+            {
+                board[x][y].state = UNCOVERED;
+                uncovered_fields++;
+
+                if(board[x][y].nearby_bombs == 0)
+                {
+                    uncover_harmless_neighbours(x+1, y+1);
+                    uncover_harmless_neighbours(x+1, y);
+                    uncover_harmless_neighbours(x+1, y-1);
+
+                    uncover_harmless_neighbours(x, y+1);
+                    uncover_harmless_neighbours(x, y-1);
+
+                    uncover_harmless_neighbours(x-1, y+1);
+                    uncover_harmless_neighbours(x-1, y);
+                    uncover_harmless_neighbours(x-1, y-1);
+                }
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
 // process button events
 void process_player_input()
 {
     // uncover a field
     if(gb.buttons.pressed(BTN_A))
     {
+        if(first_field)
+        {
+            first_field = false;
+            place_bombs();
+            compute_bomb_hints();
+        }
+
         if(board[cursor.x+1][cursor.y+1].state == COVERED)
         {
-            board[cursor.x+1][cursor.y+1].state = UNCOVERED;
+            //board[cursor.x+1][cursor.y+1].state = UNCOVERED;
 
-            // game is lost, uncover all fields
+            // game is lost, uncover all bombs
             if(board[cursor.x+1][cursor.y+1].is_bomb)
             {
-                game_state = LOST;
-                for(int x=1; x<WIDTH-1; x++)
+
+                for(byte x=1; x<WIDTH-1; x++)
                 {
-                    for(int y=1; y<HEIGHT-1; y++)
+                    for(byte y=1; y<HEIGHT-1; y++)
                     {
-                        board[x][y].state = UNCOVERED;
+                        if(board[x][y].is_bomb)
+                            board[x][y].state = UNCOVERED;
                     }
                 }
+                game_state = LOST;
                 gb.popup(F("You lost. :("), 20);
                 gb.sound.playCancel();
             }
@@ -229,7 +271,17 @@ void process_player_input()
             {
                 gb.sound.playOK();
 
-                if(++uncovered_fields == COLUMNS * ROWS - BOMB_COUNT)
+                if(board[cursor.x+1][cursor.y+1].nearby_bombs == 0)
+                {
+                    uncover_harmless_neighbours(cursor.x+1, cursor.y+1);
+                }
+                else
+                {
+                    board[cursor.x+1][cursor.y+1].state = UNCOVERED;
+                    uncovered_fields++;
+                }
+
+                if(uncovered_fields == COLUMNS * ROWS - BOMB_COUNT)
                 {
                     game_state = WON;
                     gb.popup(F("You won! :)"), 20);
@@ -242,6 +294,13 @@ void process_player_input()
     // flag and unflag a field
     if(gb.buttons.pressed(BTN_B))
     {
+        if(first_field)
+        {
+            first_field = false;
+            place_bombs();
+            compute_bomb_hints();
+        }
+
         if(board[cursor.x+1][cursor.y+1].state == COVERED)
         {
             board[cursor.x+1][cursor.y+1].state = FLAGGED;
@@ -302,12 +361,12 @@ void setup()
     game_state = RUNNING;
 
     init_board();
-    place_bombs();
-    compute_bomb_hints();
 
     cursor.x = 0;
     cursor.y = 0;
+
     uncovered_fields = 0;
+    first_field = true;
 }
 
 //------------------------------------------------------------------------------
