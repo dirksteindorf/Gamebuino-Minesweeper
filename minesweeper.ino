@@ -52,6 +52,19 @@ Cursor cursor;
 enum Game_state {RUNNING, WON, LOST};
 Game_state game_state;
 
+
+const byte flag[] PROGMEM=
+{
+    8, 7,
+    B10000000,
+    B11000000,
+    B11100000,
+    B10110000,
+    B10010000,
+    B10000000,
+    B10000000,
+};
+
 //------------------------------------------------------------------------------
 // initialize the playing field
 void init_board()
@@ -159,10 +172,11 @@ void draw_board()
 
             if(board[i][j].state == FLAGGED)
             {
-                gb.display.drawChar(offset_x + FIELD_WIDTH * (i-1) + 1 ,
-                                    offset_y + FIELD_HEIGHT * (j-1) + 1,
-                                    0x0E,
-                                    1);
+                gb.display.drawBitmap(offset_x + FIELD_WIDTH * (i-1) + 1 ,
+                                      offset_y + FIELD_HEIGHT * (j-1) + 1 ,
+                                      flag,
+                                      0,
+                                      0);
             }
 
             if(board[i][j].state == UNCOVERED)
