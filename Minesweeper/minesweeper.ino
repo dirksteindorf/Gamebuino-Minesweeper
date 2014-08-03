@@ -20,9 +20,10 @@ const byte offset_y = (LCDHEIGHT - (ROWS) * FIELD_HEIGHT) / 2;
 
 const char text[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
-byte uncovered_fields = 0;
+byte uncovered_fields;
+byte flag_count;
 
-byte first_field = true;
+byte first_field;
 
 //-------------------------------------
 // board
@@ -278,7 +279,7 @@ void process_player_input()
                     }
                 }
                 game_state = LOST;
-                gb.popup(F("You lost. :("), 20);
+                gb.popup(F("You lost. :("), 40);
                 gb.sound.playCancel();
             }
             else
@@ -298,7 +299,7 @@ void process_player_input()
                 if(uncovered_fields == COLUMNS * ROWS - BOMB_COUNT)
                 {
                     game_state = WON;
-                    gb.popup(F("You won! :)"), 20);
+                    gb.popup(F("You won! :)"), 40);
                     gb.sound.playOK();
                 }
             }
@@ -318,12 +319,14 @@ void process_player_input()
         if(board[cursor.x+1][cursor.y+1].state == COVERED)
         {
             board[cursor.x+1][cursor.y+1].state = FLAGGED;
+            flag_count++;
             gb.sound.playOK();
         }
 
         else if(board[cursor.x+1][cursor.y+1].state == FLAGGED)
         {
             board[cursor.x+1][cursor.y+1].state = COVERED;
+            flag_count--;
             gb.sound.playOK();
         }
     }
@@ -368,6 +371,7 @@ void setup()
     gb.titleScreen(F("Minesweeper"));
 
     gb.pickRandomSeed();
+    gb.battery.show = false;
 
     //gb.display.setFont(font3x3);
     gb.display.setFont(font5x7);
@@ -380,6 +384,7 @@ void setup()
     cursor.y = 0;
 
     uncovered_fields = 0;
+    flag_count = 0;
     first_field = true;
 }
 
@@ -388,6 +393,11 @@ void loop()
 {
     if(gb.update())
     {
+        gb.display.print("\n\n\n\n\n");
+        gb.display.print(flag_count);
+        gb.display.print("/");
+        gb.display.print(BOMB_COUNT);
+
         if(game_state == RUNNING)
         {
             process_player_input();
