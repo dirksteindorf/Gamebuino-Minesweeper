@@ -19,7 +19,7 @@ const byte FIELD_HEIGHT = fonty + 2;
 
 const byte COLUMNS = 12;
 const byte ROWS    = 6;
-const byte BOMB_COUNT = 6;
+const byte BOMB_COUNT = ((COLUMNS + ROWS) / 2) + (ROWS / 2);
 
 const byte WIDTH  = COLUMNS + 2;
 const byte HEIGHT = ROWS + 2;
