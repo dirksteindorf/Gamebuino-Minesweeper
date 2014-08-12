@@ -62,7 +62,8 @@ Cursor cursor;
 enum Game_state {RUNNING, WON, LOST};
 Game_state game_state;
 
-
+//-------------------------------------
+//define special characters (flag, neutral face)
 const byte flag[] PROGMEM=
 {
 	8, 5,
@@ -71,6 +72,18 @@ const byte flag[] PROGMEM=
 	B01000000,
 	B11100000,
 	B11100000,
+};
+
+const byte neutral[] PROGMEM=
+{
+	8, 7,
+	B01110000,
+	B11111000,
+	B10101000,
+	B11111000,
+	B10001000,
+	B11111000,
+	B01110000,
 };
 
 /*if(FONT == font5x7){
@@ -163,22 +176,32 @@ void compute_bomb_hints()
 // draw the playing field
 void draw_board()
 {
-    // draw happy/sad smiley depending on the game state
-    if(game_state == WON)
-    {
-        gb.display.drawChar(FIELD_WIDTH,
-                            FIELD_HEIGHT,
-                            0x02,
-                            1);
-    }
-    else if(game_state == LOST)
-    {
-        gb.display.drawChar(FIELD_WIDTH,
-                            FIELD_HEIGHT,
-                            0x01,
-                            1);
-    }
-
+	gb.display.setFont(font5x7);
+    // draw happy/sad/nuetral smiley depending on the game state
+	if(game_state == LOST)
+    	{
+        	gb.display.drawChar(FIELD_WIDTH,
+                				FIELD_HEIGHT,
+                 			   0x01,
+                 			   1);
+    	}
+    else if(gb.buttons.pressed(BTN_A))
+    	{
+        	gb.display.drawBitmap(FIELD_WIDTH,
+              				   	 FIELD_HEIGHT,
+               				     neutral,
+              				   	 0,
+							   	 0);
+    	}
+	else
+		{
+        	gb.display.drawChar(FIELD_WIDTH,
+                				FIELD_HEIGHT,
+                 			    0x02,
+                 			    1);
+		}
+	gb.display.setFont(FONT);
+	
     // draw mine fields
     for(byte i=1; i<WIDTH-1; i++)
     {
