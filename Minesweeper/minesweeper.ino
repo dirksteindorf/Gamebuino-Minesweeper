@@ -1,12 +1,21 @@
 #include <SPI.h>
 #include <Gamebuino.h>
 
+//Font variables
+#define FONT font3x5
+
+byte fontx = 3;
+byte fonty = 5;
+
+//-------------------------------------
+
 Gamebuino gb;
 extern const byte font3x3[];
+extern const byte font3x5[];
 extern const byte font5x7[];
 
-const byte FIELD_WIDTH  = 7;
-const byte FIELD_HEIGHT = 9;
+const byte FIELD_WIDTH  = fontx + 2;
+const byte FIELD_HEIGHT = fonty + 2;
 
 const byte COLUMNS = 6;
 const byte ROWS    = 5;
@@ -374,7 +383,7 @@ void setup()
     gb.battery.show = false;
 
     //gb.display.setFont(font3x3);
-    gb.display.setFont(font5x7);
+    gb.display.setFont(FONT);
 
     game_state = RUNNING;
 
