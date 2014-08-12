@@ -27,7 +27,7 @@ const byte HEIGHT = ROWS + 2;
 const byte offset_x = 21; //((LCDWIDTH - (COLUMNS) * FIELD_WIDTH) / 2) + 17;
 const byte offset_y = (LCDHEIGHT - (ROWS) * FIELD_HEIGHT) / 2;
 
-const char text[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+const char text[10] = {' ', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
 byte uncovered_fields;
 byte flag_count;
@@ -209,10 +209,10 @@ void draw_board()
         {
             if(board[i][j].state == COVERED)
             {
-                gb.display.drawChar(offset_x + FIELD_WIDTH * (i-1) + 1 ,
+                gb.display.fillRect(offset_x + FIELD_WIDTH * (i-1) + 1,
                                     offset_y + FIELD_HEIGHT * (j-1) + 1,
-                                    0x20,
-                                    1);
+                                    fontx,
+									fonty);
             }
 
             if(board[i][j].state == FLAGGED)
@@ -443,7 +443,7 @@ void loop()
         gb.display.print(flag_count);
         gb.display.print("/");
         gb.display.print(BOMB_COUNT);
-		gb.display.setFont(font3x5);
+		gb.display.setFont(FONT);
 
         if(game_state == RUNNING)
         {
