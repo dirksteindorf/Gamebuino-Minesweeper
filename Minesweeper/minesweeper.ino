@@ -402,10 +402,12 @@ void loop()
 {
     if(gb.update())
     {
+		gb.display.setFont(font5x7);
         gb.display.print("\n\n\n\n\n");
         gb.display.print(flag_count);
         gb.display.print("/");
         gb.display.print(BOMB_COUNT);
+		gb.display.setFont(font3x5);
 
         if(game_state == RUNNING)
         {
