@@ -17,8 +17,8 @@ extern const byte font5x7[];
 const byte FIELD_WIDTH  = fontx + 2;
 const byte FIELD_HEIGHT = fonty + 2;
 
-const byte COLUMNS = 6;
-const byte ROWS    = 5;
+const byte COLUMNS = 12;
+const byte ROWS    = 6;
 const byte BOMB_COUNT = 6;
 
 const byte WIDTH  = COLUMNS + 2;
