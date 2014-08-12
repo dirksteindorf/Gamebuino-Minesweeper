@@ -24,7 +24,7 @@ const byte BOMB_COUNT = 6;
 const byte WIDTH  = COLUMNS + 2;
 const byte HEIGHT = ROWS + 2;
 
-const byte offset_x = (LCDWIDTH - (COLUMNS) * FIELD_WIDTH) / 2;
+const byte offset_x = 19; //((LCDWIDTH - (COLUMNS) * FIELD_WIDTH) / 2) + 17;
 const byte offset_y = (LCDHEIGHT - (ROWS) * FIELD_HEIGHT) / 2;
 
 const char text[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
