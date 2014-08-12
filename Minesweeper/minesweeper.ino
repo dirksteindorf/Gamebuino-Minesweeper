@@ -24,7 +24,7 @@ const byte BOMB_COUNT = ((COLUMNS + ROWS) / 2) + (ROWS / 2);
 const byte WIDTH  = COLUMNS + 2;
 const byte HEIGHT = ROWS + 2;
 
-const byte offset_x = 19; //((LCDWIDTH - (COLUMNS) * FIELD_WIDTH) / 2) + 17;
+const byte offset_x = 21; //((LCDWIDTH - (COLUMNS) * FIELD_WIDTH) / 2) + 17;
 const byte offset_y = (LCDHEIGHT - (ROWS) * FIELD_HEIGHT) / 2;
 
 const char text[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
@@ -416,6 +416,7 @@ void loop()
     {
 		gb.display.setFont(font5x7);
         gb.display.print("\n\n\n\n\n");
+		if(BOMB_COUNT >= 10) gb.display.setFont(font3x5);
         gb.display.print(flag_count);
         gb.display.print("/");
         gb.display.print(BOMB_COUNT);
