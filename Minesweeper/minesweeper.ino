@@ -67,11 +67,11 @@ Game_state game_state;
 const byte flag[] PROGMEM=
 {
 	8, 5,
-	B11000000,
-	B11000000,
-	B01000000,
+	B01100000,
 	B11100000,
-	B11100000,
+	B10100000,
+	B00100000,
+	B00100000,
 };
 
 const byte neutral[] PROGMEM=
