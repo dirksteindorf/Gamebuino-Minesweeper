@@ -177,7 +177,6 @@ void draw_board()
                  			   0x01,
                  			   1);
     	}
-        	gb.display.drawBitmap(FIELD_WIDTH,
     else if(ADown)
     {
 	        if(board[cursor.x+1][cursor.y+1].state == COVERED){
@@ -194,6 +193,7 @@ void draw_board()
 	                 			    0x02,
 	                 			    1);
 				
+			}
     	}
 	else
 		{
