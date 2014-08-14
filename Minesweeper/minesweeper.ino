@@ -160,8 +160,14 @@ void compute_bomb_hints()
 
 //------------------------------------------------------------------------------
 // draw the playing field
+
+boolean ADown = false;
+
 void draw_board()
 {
+  if(gb.buttons.pressed(BTN_A)) ADown = true;
+  if(gb.buttons.released(BTN_A)) ADown = false;
+  
 	gb.display.setFont(font5x7);
     // draw happy/sad/nuetral smiley depending on the game state
 	if(game_state == LOST)
@@ -171,13 +177,23 @@ void draw_board()
                  			   0x01,
                  			   1);
     	}
-    else if(gb.buttons.pressed(BTN_A))
-    	{
         	gb.display.drawBitmap(FIELD_WIDTH,
-              				   	 FIELD_HEIGHT,
-               				     neutral,
-              				   	 0,
-							   	 0);
+    else if(ADown)
+    {
+	        if(board[cursor.x+1][cursor.y+1].state == COVERED){
+        		gb.display.drawBitmap(FIELD_WIDTH,
+              				   	 	  FIELD_HEIGHT,
+               				     	  neutral,
+              				   	 	  0,
+							   	 	  0);
+			}
+			else
+			{
+	        	gb.display.drawChar(FIELD_WIDTH,
+	                				FIELD_HEIGHT,
+	                 			    0x02,
+	                 			    1);
+				
     	}
 	else
 		{
@@ -280,10 +296,18 @@ void uncover_harmless_neighbours(byte x, byte y)
 
 //------------------------------------------------------------------------------
 // process button events
+boolean NotFirstPress = false;
+
 void process_player_input()
 {
     // uncover a field
-    if(gb.buttons.pressed(BTN_A))
+    if(gb.buttons.pressed(BTN_A)){
+		NotFirstPress = true;
+        if(board[cursor.x+1][cursor.y+1].state == COVERED){
+			gb.sound.playTick();
+        }
+	}
+    if((gb.buttons.released(BTN_A)) && NotFirstPress == true)
     {
         if(first_field)
         {
@@ -457,6 +481,8 @@ void setup()
     uncovered_fields = 0;
     flag_count = 0;
     first_field = true;
+	
+	NotFirstPress = false;
 }
 
 //------------------------------------------------------------------------------
