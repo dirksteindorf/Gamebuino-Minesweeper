@@ -86,20 +86,6 @@ const byte neutral[] PROGMEM=
 	B01110000,
 };
 
-/*if(FONT == font5x7){
-	const byte flag[] PROGMEM=
-	{
-    	8, 7,
-		B01100000,
-		B11100000,
-		B01100000,
-		B00100000,
-		B00100000,
-		B01110000,
-		B11111000,
-	};
-}*/
-
 //------------------------------------------------------------------------------
 // initialize the playing field
 void init_board()
