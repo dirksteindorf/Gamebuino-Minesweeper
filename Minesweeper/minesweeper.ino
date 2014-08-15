@@ -1,24 +1,33 @@
 #include <SPI.h>
 #include <Gamebuino.h>
 
+//Font variables
+#define FONT font3x5
+
+byte fontx = 3;
+byte fonty = 5;
+
+//-------------------------------------
+
 Gamebuino gb;
 extern const byte font3x3[];
+extern const byte font3x5[];
 extern const byte font5x7[];
 
-const byte FIELD_WIDTH  = 7;
-const byte FIELD_HEIGHT = 9;
+const byte FIELD_WIDTH  = fontx + 2;
+const byte FIELD_HEIGHT = fonty + 2;
 
-const byte COLUMNS = 6;
-const byte ROWS    = 5;
-const byte BOMB_COUNT = 6;
+const byte COLUMNS = 12;
+const byte ROWS    = 6;
+const byte BOMB_COUNT = ((COLUMNS + ROWS) / 2) + (ROWS / 2);
 
 const byte WIDTH  = COLUMNS + 2;
 const byte HEIGHT = ROWS + 2;
 
-const byte offset_x = (LCDWIDTH - (COLUMNS) * FIELD_WIDTH) / 2;
+const byte offset_x = 21; //((LCDWIDTH - (COLUMNS) * FIELD_WIDTH) / 2) + 17;
 const byte offset_y = (LCDHEIGHT - (ROWS) * FIELD_HEIGHT) / 2;
 
-const char text[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+const char text[10] = {' ', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
 byte uncovered_fields;
 byte flag_count;
@@ -53,17 +62,28 @@ Cursor cursor;
 enum Game_state {RUNNING, WON, LOST};
 Game_state game_state;
 
-
+//-------------------------------------
+//define special characters (flag, neutral face)
 const byte flag[] PROGMEM=
 {
-    8, 7,
-    B10000000,
-    B11000000,
-    B11100000,
-    B10110000,
-    B10010000,
-    B10000000,
-    B10000000,
+	8, 5,
+	B01100000,
+	B11100000,
+	B10100000,
+	B00100000,
+	B00100000,
+};
+
+const byte neutral[] PROGMEM=
+{
+	8, 7,
+	B01110000,
+	B11111000,
+	B10101000,
+	B11111000,
+	B10001000,
+	B11111000,
+	B01110000,
 };
 
 //------------------------------------------------------------------------------
@@ -140,24 +160,50 @@ void compute_bomb_hints()
 
 //------------------------------------------------------------------------------
 // draw the playing field
+
+boolean ADown = false;
+
 void draw_board()
 {
-    // draw happy/sad smiley depending on the game state
-    if(game_state == WON)
+  if(gb.buttons.pressed(BTN_A)) ADown = true;
+  if(gb.buttons.released(BTN_A)) ADown = false;
+  
+	gb.display.setFont(font5x7);
+    // draw happy/sad/nuetral smiley depending on the game state
+	if(game_state == LOST)
+    	{
+        	gb.display.drawChar(FIELD_WIDTH,
+                				FIELD_HEIGHT,
+                 			   0x01,
+                 			   1);
+    	}
+    else if(ADown)
     {
-        gb.display.drawChar(FIELD_WIDTH,
-                            FIELD_HEIGHT,
-                            0x02,
-                            1);
-    }
-    else if(game_state == LOST)
-    {
-        gb.display.drawChar(FIELD_WIDTH,
-                            FIELD_HEIGHT,
-                            0x01,
-                            1);
-    }
-
+	        if(board[cursor.x+1][cursor.y+1].state == COVERED){
+        		gb.display.drawBitmap(FIELD_WIDTH,
+              				   	 	  FIELD_HEIGHT,
+               				     	  neutral,
+              				   	 	  0,
+							   	 	  0);
+			}
+			else
+			{
+	        	gb.display.drawChar(FIELD_WIDTH,
+	                				FIELD_HEIGHT,
+	                 			    0x02,
+	                 			    1);
+				
+			}
+    	}
+	else
+		{
+        	gb.display.drawChar(FIELD_WIDTH,
+                				FIELD_HEIGHT,
+                 			    0x02,
+                 			    1);
+		}
+	gb.display.setFont(FONT);
+	
     // draw mine fields
     for(byte i=1; i<WIDTH-1; i++)
     {
@@ -165,10 +211,10 @@ void draw_board()
         {
             if(board[i][j].state == COVERED)
             {
-                gb.display.drawChar(offset_x + FIELD_WIDTH * (i-1) + 1 ,
+                gb.display.fillRect(offset_x + FIELD_WIDTH * (i-1) + 1,
                                     offset_y + FIELD_HEIGHT * (j-1) + 1,
-                                    0x20,
-                                    1);
+                                    fontx,
+									fonty);
             }
 
             if(board[i][j].state == FLAGGED)
@@ -250,10 +296,18 @@ void uncover_harmless_neighbours(byte x, byte y)
 
 //------------------------------------------------------------------------------
 // process button events
+boolean NotFirstPress = false;
+
 void process_player_input()
 {
     // uncover a field
-    if(gb.buttons.pressed(BTN_A))
+    if(gb.buttons.pressed(BTN_A)){
+		NotFirstPress = true;
+        if(board[cursor.x+1][cursor.y+1].state == COVERED){
+			gb.sound.playTick();
+        }
+	}
+    if((gb.buttons.released(BTN_A)) && NotFirstPress == true)
     {
         if(first_field)
         {
@@ -363,18 +417,59 @@ void process_player_input()
         gb.sound.playTick();
     }
 }
+//------------------------------------------------------------------------------
+//Logo
 
+const byte logo[] PROGMEM = {64,36,
+B11111111,B11111111,B11111111,B11111111,B11111111,B11111111,B11111111,B11111111,
+B10000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000001,
+B10110000,B00011000,B00000000,B00000000,B00000000,B00000000,B00000000,B00000001,
+B10111000,B00111000,B00000000,B00111111,B10110100,B01011101,B11011101,B11011101,
+B10111100,B01111000,B00000001,B10111111,B10100100,B01010001,B00010101,B00010101,
+B10111110,B11111011,B00000001,B10110000,B10100100,B01010001,B00010101,B00010101,
+B10111111,B11111011,B01100001,B10110000,B00100100,B01010001,B00010101,B00010101,
+B10110111,B11011000,B01110001,B10110000,B00100100,B01010001,B00010101,B00010101,
+B10110011,B10011011,B01110001,B10110000,B00100100,B01010001,B00011101,B00011101,
+B10110001,B00011011,B01111001,B10111100,B00110100,B01011001,B10010001,B10011001,
+B10110000,B00011011,B01111101,B10111000,B00010100,B01010001,B00010001,B00010101,
+B10110000,B00011010,B00101111,B10110000,B00010100,B01010001,B00010001,B00010101,
+B10110000,B00010000,B10100111,B10110000,B00010101,B01010001,B00010001,B00010101,
+B10110000,B00000100,B10000011,B10110000,B00010101,B01010001,B00010001,B00010101,
+B10110000,B00100011,B11010011,B10111111,B10010101,B01010001,B00010001,B00010101,
+B10110000,B00010111,B11100001,B10111111,B10110010,B10011101,B11010001,B11010101,
+B10110000,B00001111,B11111100,B00000000,B00000000,B00000000,B00000000,B00000101,
+B10110111,B10001111,B11110001,B11111111,B11111111,B11111111,B11111111,B11110101,
+B10110000,B00111111,B11111100,B00000000,B00000000,B00000000,B00000000,B00000101,
+B10110000,B00001111,B11110000,B00000000,B00100000,B00000000,B00000100,B10010101,
+B10110000,B00010111,B11101000,B00000000,B01000000,B10000000,B00000010,B10100101,
+B10110000,B00100011,B11000100,B00000000,B01000001,B00000100,B00000000,B00000101,
+B10110000,B00000101,B00100000,B00000000,B10000010,B00001000,B00100110,B10110101,
+B10110000,B00000000,B10000000,B00000001,B11000111,B00011100,B01110000,B00000101,
+B10110000,B00000001,B00000000,B00000001,B11000111,B00011100,B01110010,B10100101,
+B10110000,B00000000,B10000000,B00000001,B11000111,B00011100,B01110100,B10010101,
+B10110000,B00000001,B00000000,B11100000,B00000000,B00000000,B00000000,B00000001,
+B10110000,B00000000,B10000001,B11100000,B00110010,B10000101,B11010001,B00010101,
+B10110000,B00000001,B00000001,B11100000,B00111001,B00000101,B01010001,B00001001,
+B10110000,B00000000,B10000001,B00100000,B00110001,B00011001,B11011101,B11001001,
+B10110000,B00000001,B00000000,B00100000,B00000000,B00000000,B00000000,B00000001,
+B10110000,B00000000,B10000000,B00100000,B00010001,B11010101,B10011100,B11011101,
+B10110000,B00000001,B00000000,B00100000,B00111001,B01010101,B11001000,B10001001,
+B10110000,B00000000,B10000000,B01110000,B00010001,B10011101,B10011101,B10001001,
+B10110000,B00000001,B00000000,B11111000,B00000000,B00000000,B00000000,B00000001,
+B11111111,B11111111,B11111111,B11111111,B11111111,B11111111,B11111111,B11111111,
+};
 //------------------------------------------------------------------------------
 void setup()
 {
     gb.begin();
-    gb.titleScreen(F("Minesweeper"));
-
+    gb.display.setFont(font5x7);	
+    gb.titleScreen(F(""), logo);
+    gb.display.setFont(FONT);
     gb.pickRandomSeed();
     gb.battery.show = false;
 
     //gb.display.setFont(font3x3);
-    gb.display.setFont(font5x7);
+    gb.display.setFont(FONT);
 
     game_state = RUNNING;
 
@@ -386,6 +481,8 @@ void setup()
     uncovered_fields = 0;
     flag_count = 0;
     first_field = true;
+	
+	NotFirstPress = false;
 }
 
 //------------------------------------------------------------------------------
@@ -393,10 +490,13 @@ void loop()
 {
     if(gb.update())
     {
+		gb.display.setFont(font5x7);
         gb.display.print("\n\n\n\n\n");
+		if(BOMB_COUNT >= 10) gb.display.setFont(font3x5);
         gb.display.print(flag_count);
         gb.display.print("/");
         gb.display.print(BOMB_COUNT);
+		gb.display.setFont(FONT);
 
         if(game_state == RUNNING)
         {
