@@ -9,7 +9,7 @@ The game is playable, although some features are still missing:
 * epic soundtrack, achievements and Steam Trading Cards
 
 Here's a little preview of the game:  
-![Minesweeper](https://raw.github.com/dirksteindorf/Gamebuino-Minesweeper/master/minesweeper-preview.png)
+![Minesweeper](https://raw.github.com/dirksteindorf/Gamebuino-Minesweeper/master/minesweeper-preview.gif)
 
 ## How to play
 
